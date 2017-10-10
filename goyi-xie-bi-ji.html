@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+
+        <title>go一些笔记</title>
+        <meta charset="utf-8" />
+
+
+        <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+        <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1">
+
+        <link rel="stylesheet" type="text/css" href="/theme/gumby.css" />
+        <link rel="stylesheet" type="text/css" href="/theme/style.css" />
+        <link rel="stylesheet" type="text/css" href="/theme/pygment.css" />
+
+        <script src="/theme/js/libs/modernizr-2.6.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+
+
+    <div class="container">
+
+        <div class="row">
+
+          <header id="banner" class="body">
+                  <h1><a href="/">blog <strong></strong></a></h1>
+          </header><!-- /#banner -->
+
+            <div id="navigation" class="navbar row">
+              <a href="#" gumby-trigger="#navigation &gt; ul" class="toggle"><i class="icon-menu"></i></a>
+             
+              <ul class="columns">
+                <li><a href="/">Home</a></li>
+
+
+              </ul>
+            </div>
+
+<section id="content" class="body">
+
+   <div class="row">
+        <div class="eleven columns">
+
+
+            <header>
+              <h2 class="entry-title">
+                <a href="/goyi-xie-bi-ji.html" rel="bookmark"
+                   title="Permalink to go一些笔记">go一些笔记</a></h2>
+           
+            </header>
+            <footer class="post-info">
+              <abbr class="published" title="2017-10-10T00:00:00+02:00">
+                二 10 十月 2017
+              </abbr>
+              <address class="vcard author">By 
+                <a class="url fn" href="/author/zivwong.html"> zivwong</a>
+              </address>
+            </footer><!-- /.post-info -->
+            <div class="entry-content">
+              <h3>打开关闭文件</h3>
+<div class="highlight"><pre><span></span>os.Create 打开文件
+    f, err := os.Create(&quot;a.txt&quot;) // 打开文件
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    f.WriteString(&quot;hello&quot;) //写文件
+    f.Close()    //关闭文件
+</pre></div>
+
+
+<h3>顺序写文件</h3>
+<div class="highlight"><pre><span></span>os.O_APPEND  追加
+os.O_CREATE  没有创建
+os.O_RDWR  可读可写
+func main() {
+    f, err := os.OpenFile(&quot;a.txt&quot;, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    f.WriteString(&quot;hello\n&quot;) //写文件
+    f.Close()    //关闭文件
+}
+</pre></div>
+
+
+<h3>随机写入</h3>
+<div class="highlight"><pre><span></span>os.SEEK_SET
+func main() {
+    f, err := os.OpenFile(&quot;a.txt&quot;, os.O_CREATE|os.O_RDWR, 0644)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    f.WriteString(&quot;hello\n&quot;) //写文件
+    f.Seek(0, os.SEEK_SET)
+    f.WriteString(&quot;hehe&quot;)
+    f.Close()    //关闭文件
+}
+</pre></div>
+
+
+<h3>顺序读取</h3>
+<div class="highlight"><pre><span></span>func main() {
+    f, err := os.OpenFile(&quot;a.txt&quot;, os.O_CREATE|os.O_RDWR, 0644)
+    if err != nil {
+        log.Fatal(err)
+    }
+       //逐行打印每一行
+    r := bufio.NewReader(f)
+    for {
+        line, err := r.ReadString(&#39;\n&#39;)
+        if err == io.EOF {
+            break
+        }
+        fmt.Print(line)
+    }
+    f.Close()
+}
+</pre></div>
+
+
+<h2>读取目录</h2>
+<h3>读取目录文件</h3>
+<div class="highlight"><pre><span></span>func main() {
+    f, err := os.Open(os.Args[1])
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    infos, _ := f.Readdir(-1)   -1代表所有
+    for _, info := range infos {
+        fmt.Printf(&quot;%v %d %d %s\n&quot;,info.IsDir(), info.Size(), info.ModTime(), info.Name())
+    }
+    f.Close()
+}
+</pre></div>
+
+
+<h3>head 命令</h3>
+<div class="highlight"><pre><span></span>var lines  = flag.Int(&quot;n&quot;, 10, &quot;hehe&quot;)
+
+func main() {
+    flag.Parse()
+    f, err := os.Open(os.Args[3])
+    if err != nil {
+        log.Fatal(err)
+    }
+        //逐行打印每一行
+    r := bufio.NewReader(f)
+    for i := 0; i &lt; *lines; i++ {
+        line, err := r.ReadString(&#39;\n&#39;)   //分割
+        n, _ := strconv.Atoi(os.Args[2])
+        if i == n || err == io.EOF {
+            break
+        }
+        fmt.Print(line)
+    }
+    f.Close()
+}
+</pre></div>
+
+
+<h3>统计单词个数</h3>
+<div class="highlight"><pre><span></span>func main() {
+    count := make(map[string]int)                      //初始化一个map变量count,key为字符串，值为int
+    buf, err := ioutil.ReadFile(os.Arg[1]) //读取文件内容
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    words := strings.Fields(string(buf)) //对读取的字符串，以空格为分割成一个数组
+    for _, word := range words {         //循环单词数组
+        count[word] += 1 //在count中查找key为单词的值，如果没找到值为0，对值进行加1
+    }
+    for k, v := range count { //循环count的key和值
+        fmt.Printf(&quot;单词：%-20s出现次数：%d\n&quot;, k, v)
+    }
+
+}
+</pre></div>
+            </div><!-- /.entry-content -->
+
+
+        </div><!-- /.eleven.columns -->
+
+<div class="three columns">
+
+<h4>Pages</h4>
+
+ <ul>
+  </ul>
+
+<h4>Categories</h4>
+<ul class="blank">
+		<li><a href="/category/go.html">go</a></li>
+</ul>
+
+
+<h4>Tags</h4>
+	<ul class="blank">
+</ul>
+
+
+<nav class="widget">
+  <h4>Social</h4>
+  <ul class="blank">
+    <li><a href="#">You can add links in your config file</a></li>
+    <li><a href="#">Another social link</a></li>
+  </ul>
+</nav>
+
+</div> </div><!-- /.row -->
+
+
+</section>
+
+       </div><!-- /.row -->
+    </div><!-- /.container -->
+
+
+       <div class="container.nopad bg">
+
+    
+        <footer id="credits" class="row">
+          <div class="seven columns left-center">
+
+                   <address id="about" class="vcard body">
+                    Proudly powered by <a href="http://getpelican.com/">Pelican</a>,
+                    which takes great advantage of <a href="http://python.org">Python</a>.
+                    <br />
+                    Based on the <a target="_blank" href="http://gumbyframework.com">Gumby Framework</a>
+                    </address>
+          </div>
+
+
+          <div class="seven columns">
+            <div class="row">
+              <ul class="socbtns">
+
+
+
+
+
+              </ul>
+            </div>
+          </div>
+        </footer>
+
+    </div>
+
+
+  <script src="/theme/js/libs/jquery-1.9.1.min.js"></script>
+  <script src="/theme/js/libs/gumby.min.js"></script>
+  <script src="/theme/js/plugins.js"></script>
+</body>
+</html>
