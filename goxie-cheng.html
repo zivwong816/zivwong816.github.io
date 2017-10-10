@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+
+        <title>go协程</title>
+        <meta charset="utf-8" />
+
+
+        <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+        <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1">
+
+        <link rel="stylesheet" type="text/css" href="/theme/gumby.css" />
+        <link rel="stylesheet" type="text/css" href="/theme/style.css" />
+        <link rel="stylesheet" type="text/css" href="/theme/pygment.css" />
+
+        <script src="/theme/js/libs/modernizr-2.6.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+
+
+    <div class="container">
+
+        <div class="row">
+
+          <header id="banner" class="body">
+                  <h1><a href="/">zivwong的blog <strong></strong></a></h1>
+          </header><!-- /#banner -->
+
+            <div id="navigation" class="navbar row">
+              <a href="#" gumby-trigger="#navigation &gt; ul" class="toggle"><i class="icon-menu"></i></a>
+             
+              <ul class="columns">
+                <li><a href="/">Home</a></li>
+
+
+              </ul>
+            </div>
+
+<section id="content" class="body">
+
+   <div class="row">
+        <div class="eleven columns">
+
+
+            <header>
+              <h2 class="entry-title">
+                <a href="/goxie-cheng.html" rel="bookmark"
+                   title="Permalink to go协程">go协程</a></h2>
+           
+            </header>
+            <footer class="post-info">
+              <abbr class="published" title="2017-10-10T00:00:00+02:00">
+                二 10 十月 2017
+              </abbr>
+              <address class="vcard author">By 
+                <a class="url fn" href="/author/zivwong.html"> zivwong</a>
+              </address>
+            </footer><!-- /.post-info -->
+            <div class="entry-content">
+              <div class="highlight"><pre><span></span>ch <span class="o">&lt;-</span> <span class="kt">c</span> 写
+<span class="kt">c</span> <span class="o">:=</span> <span class="o">&lt;-</span> ch 读
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">package</span> <span class="n">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+   <span class="s2">&quot;net/http&quot;</span>
+   <span class="s2">&quot;log&quot;</span>
+   <span class="s2">&quot;fmt&quot;</span>
+   <span class="s2">&quot;time&quot;</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="p">:</span><span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="n">nil</span> <span class="p">{</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+      <span class="k">return</span>
+   <span class="p">}</span>
+   <span class="n">defer</span> <span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+   <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">Status</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="o">//</span> <span class="err">主协程启动一个</span><span class="n">work协程</span><span class="err">，同时传递一个</span><span class="n">channelo</span>
+<span class="o">//</span> <span class="err">主协程向</span><span class="n">channel里面发送一个url</span>
+<span class="o">//</span> <span class="n">work协程启出channel里面获取url</span><span class="err">，之后调用</span><span class="n">printUrl</span>
+<span class="n">func</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span> <span class="n">chan</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;-</span><span class="n">ch</span>
+   <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+   <span class="n">ch</span> <span class="p">:</span><span class="o">=</span> <span class="n">make</span><span class="p">(</span><span class="n">chan</span> <span class="n">string</span><span class="p">)</span>
+   <span class="n">go</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+   <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="s2">&quot;http://www.qq.com&quot;</span>
+   <span class="n">ch</span> <span class="o">&lt;-</span><span class="n">url</span>
+   <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">time</span><span class="o">.</span><span class="n">Second</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">package</span> <span class="n">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+   <span class="s2">&quot;net/http&quot;</span>
+   <span class="s2">&quot;log&quot;</span>
+   <span class="s2">&quot;fmt&quot;</span>
+   <span class="s2">&quot;time&quot;</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="p">:</span><span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="n">nil</span> <span class="p">{</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+      <span class="k">return</span>
+   <span class="p">}</span>
+   <span class="n">defer</span> <span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+   <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">Status</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">//</span><span class="mi">1</span> <span class="err">只要不</span><span class="n">close可以永远发送数据和接受数据</span>
+<span class="o">//</span><span class="mi">2</span> <span class="err">如果</span><span class="n">channel里面没有数据</span><span class="err">，接收方阻塞</span>
+<span class="o">//</span><span class="mi">3</span> <span class="err">如果没有人正在等待</span><span class="n">channel的数据</span><span class="err">，发送方会阻塞</span>
+<span class="o">//</span><span class="mi">4</span> <span class="err">从一个</span><span class="n">close的channel取数据永远不会阻塞</span><span class="err">，同时获取的是默认值</span>
+<span class="o">//</span><span class="err">默认值是</span><span class="n">chen类型</span><span class="err">，如果是字符串就是空</span>
+
+
+<span class="o">//</span> <span class="err">主协程启动</span><span class="mi">3</span><span class="err">个</span><span class="n">work协程</span>
+<span class="o">//</span> <span class="err">主协程向</span><span class="n">channel里面发送多个url</span><span class="err">，发送完毕之后关闭</span><span class="n">channel</span>
+<span class="o">//</span> <span class="n">work协程从channel里面获取url</span><span class="err">，之后调用</span><span class="n">printUrl打印url</span>
+<span class="o">//</span> <span class="n">work协程不停重复第三条</span><span class="err">，直到</span><span class="n">channel关闭</span>
+<span class="n">func</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span> <span class="n">chan</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="k">for</span> <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="nb">range</span> <span class="n">ch</span> <span class="p">{</span>
+      <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+   <span class="n">ch</span> <span class="p">:</span><span class="o">=</span> <span class="n">make</span><span class="p">(</span><span class="n">chan</span> <span class="n">string</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="p">:</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span><span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+      <span class="n">go</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+   <span class="p">}</span>
+   <span class="n">urls</span> <span class="p">:</span><span class="o">=</span> <span class="p">[]</span><span class="n">string</span><span class="p">{</span><span class="s2">&quot;http://www.qq.com&quot;</span><span class="p">,</span><span class="s2">&quot;http://www.baidu.com&quot;</span><span class="p">}</span>
+   <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="nb">range</span> <span class="n">urls</span> <span class="p">{</span>
+      <span class="n">ch</span> <span class="o">&lt;-</span> <span class="n">url</span>
+   <span class="p">}</span>
+   <span class="n">close</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+   <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">time</span><span class="o">.</span><span class="n">Second</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3>协程池</h3>
+<div class="highlight"><pre><span></span><span class="n">package</span> <span class="n">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+   <span class="s2">&quot;net/http&quot;</span>
+   <span class="s2">&quot;log&quot;</span>
+   <span class="s2">&quot;fmt&quot;</span>
+   <span class="s2">&quot;sync&quot;</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="p">:</span><span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="n">nil</span> <span class="p">{</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+      <span class="k">return</span>
+   <span class="p">}</span>
+   <span class="n">defer</span> <span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+   <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">Status</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="err">创建一个</span><span class="n">waitGroup</span>
+<span class="o">//</span> <span class="err">调用</span><span class="n">add</span>
+<span class="o">//</span> <span class="err">调用</span><span class="n">wait等待work协程结束</span>
+<span class="n">func</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span> <span class="n">chan</span> <span class="n">string</span><span class="p">,</span> <span class="n">wg</span> <span class="o">*</span><span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="k">for</span> <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="nb">range</span> <span class="n">ch</span> <span class="p">{</span>
+      <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="p">}</span>
+   <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">()</span>
+<span class="o">//</span><span class="k">for</span> <span class="p">{</span>
+<span class="o">//</span> <span class="n">url</span><span class="p">,</span> <span class="n">ok</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;-</span><span class="n">ch</span>
+<span class="o">//</span> <span class="k">if</span> <span class="err">!</span><span class="n">ok</span> <span class="p">{</span>
+<span class="o">//</span>    <span class="k">break</span>
+<span class="o">//</span> <span class="p">}</span>
+<span class="o">//</span> <span class="n">printurl</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="o">//</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+   <span class="n">ch</span> <span class="p">:</span><span class="o">=</span> <span class="n">make</span><span class="p">(</span><span class="n">chan</span> <span class="n">string</span><span class="p">)</span>
+   <span class="n">wg</span> <span class="p">:</span><span class="o">=</span> <span class="n">new</span><span class="p">(</span><span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">)</span>
+   <span class="o">//</span><span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="p">:</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span><span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+      <span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+      <span class="n">go</span> <span class="n">work</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span>
+   <span class="p">}</span>
+   <span class="n">urls</span> <span class="p">:</span><span class="o">=</span> <span class="p">[]</span><span class="n">string</span><span class="p">{</span><span class="s2">&quot;http://www.qq.com&quot;</span><span class="p">,</span><span class="s2">&quot;http://www.baidu.com&quot;</span><span class="p">}</span>
+   <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="p">:</span><span class="o">=</span> <span class="nb">range</span> <span class="n">urls</span> <span class="p">{</span>
+      <span class="n">ch</span> <span class="o">&lt;-</span> <span class="n">url</span>
+   <span class="p">}</span>
+   <span class="n">close</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+   <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+            </div><!-- /.entry-content -->
+
+
+        </div><!-- /.eleven.columns -->
+
+<div class="three columns">
+
+<h4>Pages</h4>
+
+ <ul>
+  </ul>
+
+<h4>Categories</h4>
+<ul class="blank">
+		<li><a href="/category/go.html">go</a></li>
+</ul>
+
+
+<h4>Tags</h4>
+	<ul class="blank">
+</ul>
+
+
+<nav class="widget">
+  <h4>Social</h4>
+  <ul class="blank">
+    <li><a href="#">You can add links in your config file</a></li>
+    <li><a href="#">Another social link</a></li>
+  </ul>
+</nav>
+
+</div> </div><!-- /.row -->
+
+
+</section>
+
+       </div><!-- /.row -->
+    </div><!-- /.container -->
+
+
+       <div class="container.nopad bg">
+
+    
+        <footer id="credits" class="row">
+          <div class="seven columns left-center">
+
+                   <address id="about" class="vcard body">
+                    Proudly powered by <a href="http://getpelican.com/">Pelican</a>,
+                    which takes great advantage of <a href="http://python.org">Python</a>.
+                    <br />
+                    Based on the <a target="_blank" href="http://gumbyframework.com">Gumby Framework</a>
+                    </address>
+          </div>
+
+
+          <div class="seven columns">
+            <div class="row">
+              <ul class="socbtns">
+
+
+
+
+
+              </ul>
+            </div>
+          </div>
+        </footer>
+
+    </div>
+
+
+  <script src="/theme/js/libs/jquery-1.9.1.min.js"></script>
+  <script src="/theme/js/libs/gumby.min.js"></script>
+  <script src="/theme/js/plugins.js"></script>
+</body>
+</html>

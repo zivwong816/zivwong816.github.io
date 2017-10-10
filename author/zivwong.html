@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 
-        <title>blog - Articles by zivwong</title>
+        <title>zivwong的blog - Articles by zivwong</title>
         <meta charset="utf-8" />
 
 
@@ -28,7 +28,7 @@
         <div class="row">
 
           <header id="banner" class="body">
-                  <h1><a href="/">blog <strong></strong></a></h1>
+                  <h1><a href="/">zivwong的blog <strong></strong></a></h1>
           </header><!-- /#banner -->
 
             <div id="navigation" class="navbar row">
@@ -50,6 +50,54 @@
 
         <div class="eleven columns">
                  <ol id="post-list">
+                        <li><article class="hentry">
+                                <header> <h2 class="entry-title"><a href="/goxie-cheng.html" rel="bookmark" title="Permalink to go协程">go协程</a></h2> </header>
+                                <footer class="post-info">
+                                    <abbr class="published" title="2017-10-10T00:00:00+02:00"> 二 10 十月 2017 </abbr>
+                                    <address class="vcard author">By 
+                                    <a class="url fn" href="/author/zivwong.html"> zivwong</a>
+                                    </address>
+                                </footer><!-- /.post-info -->
+                                <div class="entry-content"> <div class="highlight"><pre><span></span>ch <span class="o">&lt;-</span> <span class="kt">c</span> 写
+<span class="kt">c</span> <span class="o">:=</span> <span class="o">&lt;-</span> ch 读
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">package</span> <span class="n">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+   <span class="s2">&quot;net/http&quot;</span>
+   <span class="s2">&quot;log&quot;</span>
+   <span class="s2">&quot;fmt&quot;</span>
+   <span class="s2">&quot;time&quot;</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">printUrl</span><span class="p">(</span><span class="n">url</span> <span class="n">string</span><span class="p">)</span>  <span class="p">{</span>
+   <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="p">:</span><span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="n">nil</span> <span class="p">{</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+      <span class="k">return</span>
+   <span class="p">}</span>
+   <span class="n">defer</span> <span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+   <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">Status</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="o">//</span> <span class="err">主协程启动一个</span><span class="n">work协程</span><span class="err">，同时传递一个</span><span class="n">channelo</span>
+<span class="o">//</span> <span class="err">主协程向</span><span class="n">channel里面发送一个url</span>
+<span class="o">//</span> <span class="n">work协程启出channel里面获取url</span><span class="err">，之后调用</span><span class="n">printUrl</span>
+<span class="n">func</span> <span class="n">work …</span></pre></div> </div><!-- /.entry-content -->
+
+                                <div class="medium primary btn"><a href="/goxie-cheng.html" rel="bookmark" title="Permalink to go协程">Read more <i class="icon-arrow-right"></i></a></div>
+
+
+
+                                <div class="row tag-row">
+                                        <span>Tagged as : </span>
+                                            <a class="danger label" href="/tag/go.html">go</a>
+                                </div>
+
+
+
+                        </article></li>
                         <li><article class="hentry">
                                 <header> <h2 class="entry-title"><a href="/goyi-xie-bi-ji.html" rel="bookmark" title="Permalink to go一些笔记">go一些笔记</a></h2> </header>
                                 <footer class="post-info">
